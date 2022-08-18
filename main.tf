@@ -5,11 +5,11 @@ provider "aws" {
 
 #VPC
 resource "aws_vpc" "production" {
-  cidr_block       = "30.0.0.0/16"
+  cidr_block       = var.cidr_block
   instance_tenancy = "default"
 
   tags = {
-    Name = "production"
+    Name = var.enviroment
   }
 }
 
@@ -17,23 +17,23 @@ resource "aws_vpc" "production" {
 
 resource "aws_subnet" "sb1-pub" {
   vpc_id     = aws_vpc.production.id
-  cidr_block = "30.0.1.0/24"
-  availability_zone = "eu-central-1a"
+  cidr_block = cidrsubnet(var.cidr_block,8,1)          #"30.0.1.0/24"
+  availability_zone = var.availability_zone_names[0]
   map_public_ip_on_launch = "true"
 
   tags = {
-    Name = "sb1-pub"
+    Name = "sb1-pub-${var.enviroment}"
   }
 }
 
 resource "aws_subnet" "sb2-pub" {
   vpc_id     = aws_vpc.production.id
-  cidr_block = "30.0.2.0/24"
-  availability_zone = "eu-central-1b"
+  cidr_block =  cidrsubnet(var.cidr_block,8,2)        #"30.0.2.0/24"
+  availability_zone = var.availability_zone_names[1]
   map_public_ip_on_launch = "true"
 
   tags = {
-    Name = "sb2-pub"
+    Name = "sb2-pub-${var.enviroment}"
   }
 }
 
@@ -41,23 +41,23 @@ resource "aws_subnet" "sb2-pub" {
 
 resource "aws_subnet" "sb1-private" {
   vpc_id     = aws_vpc.production.id
-  cidr_block = "30.0.10.0/24"
-  availability_zone = "eu-central-1a"
+  cidr_block = cidrsubnet(var.cidr_block,8,10)                 #"30.0.10.0/24"
+  availability_zone = var.availability_zone_names[0]
   map_public_ip_on_launch = "false"
 
   tags = {
-    Name = "sb1-private"
+    Name = "sb1-private-${var.enviroment}"
   }
 }
 
 resource "aws_subnet" "sb2-private" {
   vpc_id     = aws_vpc.production.id
-  cidr_block = "30.0.11.0/24"
-  availability_zone = "eu-central-1b"
+  cidr_block = cidrsubnet(var.cidr_block,8,11)                         #"30.0.11.0/24"
+  availability_zone = var.availability_zone_names[1]
   map_public_ip_on_launch = "false"
 
   tags = {
-    Name = "sb2-private"
+    Name = "sb2-private-${var.enviroment}"
   }
 }
 
@@ -67,7 +67,7 @@ resource "aws_internet_gateway" "gw-production" {
   vpc_id = aws_vpc.production.id
 
   tags = {
-    Name = "igw-prod"
+    Name = "igw-${var.enviroment}"
   }
 }
 
@@ -131,7 +131,7 @@ resource "aws_route_table" "rt-production-private" {
   }
 
   tags = {
-    Name = "rt-production-private"
+    Name = "rt-${var.enviroment}-private"
   }
 }
 
